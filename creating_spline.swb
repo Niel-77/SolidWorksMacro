@@ -1,0 +1,134 @@
+Dim swApp As SldWorks.SldWorks
+Dim swModel As ModelDoc2
+Dim swModeldocext As ModelDocExtension
+Dim swSktchMger As SketchManager
+Dim rectlines As Variant
+Dim swSketch As Sketch
+Dim swSketchpoint As SketchPoint
+Dim swSketchsegment As SketchSegment
+
+Sub main()
+
+    ' Initialize the SolidWorks application
+    Set swApp = Application.SldWorks
+    
+    ' Create a string type variable for storing default part location
+    Dim defaultTemplate As String
+
+    ' Set the value of this string type variable to "Default part template"
+    defaultTemplate = swApp.GetUserPreferenceStringValue(swUserPreferenceStringValue_e.swDefaultTemplatePart)
+    
+    ' Create a new part document using the default template
+    Set swModel = swApp.NewDocument(defaultTemplate, 0, 0, 0)
+    
+    ' Get the model document extension object
+    Set swModeldocext = swModel.Extension
+    
+    ' Select the top plane using model document extension
+    swModeldocext.SelectByID2 "Front Plane", "PLANE", 0, 0, 0, False, 0, Nothing, swSelectOption_e.swSelectOptionDefault
+    
+    ' Get the sketch manager to create sketch routines
+    Set swSktchMger = swModel.SketchManager
+    
+    ' Start a new sketch
+    swSktchMger.InsertSketch True
+    
+    ' Enable AddToDB to add sketch entities directly to the SOLIDWORKS database
+    swSktchMger.AddToDB = True
+    
+    Dim i As Integer
+    Dim x, y, z As Integer
+    
+    
+    For i = 0 To 5
+        x = i * i * i
+        y = i * i
+        z = i
+        ' Create a Sketch Point using x, y & z variables
+        Set swSketchpoint = swSktchMger.CreatePoint(x, y, z)
+
+    Next i
+    
+    ' De-select the points after creation
+    swModel.ClearSelection2 True
+    
+    ' Set Solidworks Sketch variable to active sketch
+    Set swSketch = swSktchMger.ActiveSketch
+    
+    ' Create variant type variable named "sketchPointArray"
+    Dim sketchPointArray As Variant
+  
+    ' Get all the points in this active sketch and store them into our variant type variable
+    sketchPointArray = swSketch.GetSketchPoints2()
+
+    ' Creating new collecction to store x,y,z co-ordinates of all sketch points
+    Dim pointCollection As New Collection
+      
+    ' Loop through all points in "sketchPointArray"
+    For i = 0 To UBound(sketchPointArray)
+        ' Set Solidworks sketch point variable to current point
+        Set swSketchpoint = sketchPointArray(i)
+        
+        ' Add X co-ordinate of current point into collection
+        pointCollection.Add (swSketchpoint.x)
+        
+        ' Add Y co-ordinate of current point into collection
+        pointCollection.Add (swSketchpoint.y)
+        
+        ' Add Z co-ordinate of current point into collection
+        pointCollection.Add (swSketchpoint.z)
+    Next i
+      
+    ' Create an array variable, this is Double type variable
+    Dim point() As Double
+    
+    ' Define the size of array Dynamically
+    ReDim point(0 To pointCollection.Count) As Double
+    
+    ' Loop through the collection we have
+    For i = 0 To (pointCollection.Count - 1)
+      ' Add each item of collection into our array variable
+      point(i) = pointCollection(i + 1)
+      Debug.Print pointCollection(i + 1)
+    Next i
+    
+    ' Create a local variable name "pointArray" of variant type
+    Dim pointArray As Variant
+    
+    ' Set the new created variable equal to point array variable
+    pointArray = point
+    
+    ' Exit the sketch
+    swSktchMger.InsertSketch True
+    
+    ' De-select the sketch
+    swModel.ClearSelection2 True
+    
+    ' Select Front Plane
+    BoolStatus = swModel.Extension.SelectByID2("Front Plane", "PLANE", 0, 0, 0, False, 0, Nothing, swSelectOption_e.swSelectOptionDefault)
+    
+    ' Insert a sketch into "Front Plane"
+    swSktchMger.InsertSketch True
+    
+    ' Set the value of Solidworks Sketch segment by "CreateSpline2" method from Solidworks sketch manager
+    Set swSketchsegment = swSktchMger.CreateSpline2((pointArray), True)
+
+    ' De-select the Spline after creation
+    swModel.ClearSelection2 True
+
+    ' Disable AddToDB after creating sketch entities Don't know why shaded contours are removed after adding to database
+    swSktchMger.AddToDB = False
+    
+    ' Deselect all entities after creating the sketch
+    swModel.ClearSelection2 True
+
+    ' Show top view after creating the sketch
+    swModel.ShowNamedView2 "", swStandardViews_e.swFrontView
+    
+    ' Zoom to fit the screen in the SolidWorks window
+    swModel.ViewZoomtofit2
+       
+End Sub
+
+
+
