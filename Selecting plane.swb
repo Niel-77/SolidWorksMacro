@@ -1,0 +1,39 @@
+Option Explicit
+
+' Creating variable for Solidworks application
+Dim swApp As SldWorks.SldWorks
+' Creating variable for Solidworks document
+Dim swModel As SldWorks.ModelDoc2
+' Boolean Variable
+Dim swPart As PartDoc
+Dim BoolStatus As Boolean
+
+' Main function of our VBA program
+Sub main()
+
+    ' Setting Solidworks variable to Solidworks application
+    Set swApp = Application.SldWorks
+    
+    
+    ' Creating string type variable for storing default part location
+    Dim defaultTemplate As String
+    ' Setting value of this string type variable to "Default part template"
+    defaultTemplate = swApp.GetUserPreferenceStringValue(swUserPreferenceStringValue_e.swDefaultTemplatePart)
+
+    ' Setting Solidworks document to new part document
+    Set swModel = swApp.NewDocument(defaultTemplate, 0, 0, 0)
+    Set swPart = swModel
+    Dim filename As String
+    filename = swModel.GetTitle
+
+    ' Selecting Front Plane using modeldoc2 interface
+    BoolStatus = swModel.SelectByID("Front Plane", "PLANE", 0, 0, 0)
+    
+    ' Selecting Front Plane using imodeldoc extension interface
+    'BoolStatus = swModel.Extension.SelectByID2("Front Plane", "PLANE", 0, 0, 0, False, 0, Nothing, swSelectOption_e.swSelectOptionDefault)
+    
+    'swApp.CloseDoc filename
+    
+    
+
+End Sub

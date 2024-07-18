@@ -1,0 +1,70 @@
+Dim swApp As SldWorks.SldWorks
+Dim swModel As ModelDoc2
+Dim swModeldocext As ModelDocExtension
+Dim swSktchMger As SketchManager
+Dim rectlines As Variant
+
+
+
+Sub main()
+
+    ' Initialize the SolidWorks application
+    Set swApp = Application.SldWorks
+    
+    ' Create a string type variable for storing default part location
+    Dim defaultTemplate As String
+
+    ' Set the value of this string type variable to "Default part template"
+    defaultTemplate = swApp.GetUserPreferenceStringValue(swUserPreferenceStringValue_e.swDefaultTemplatePart)
+    
+    ' Create a new part document using the default template
+    Set swModel = swApp.NewDocument(defaultTemplate, 0, 0, 0)
+    
+    ' Get the model document extension object
+    Set swModeldocext = swModel.Extension
+    
+    ' Select the top plane using model document extension
+    swModeldocext.SelectByID2 "Front Plane", "PLANE", 0, 0, 0, False, 0, Nothing, swSelectOption_e.swSelectOptionDefault
+    
+    ' Get the sketch manager to create sketch routines
+    Set swSktchMger = swModel.SketchManager
+    
+    ' Start a new sketch
+    swSktchMger.InsertSketch True
+    
+    ' Enable AddToDB to add sketch entities directly to the SOLIDWORKS database
+    swSktchMger.AddToDB = True
+    
+    'upper-left coordinate and lower-right coordinate
+    'swSktchMger.CreateCornerRectangle 0, 0, 0, 0.4, 0.2, 0
+    
+    'center coordinates and corner coordinate from center
+    'swSktchMger.CreateCenterRectangle 0, 0, 0, 0.2, 0.1, 0
+    
+    'this returns an Array of sketch segments that represent the edges and diagonals created for this center rectangle
+    rectlines = swSktchMger.Create3PointCornerRectangle(0, 0, 0, 0.1, 0.2, 0, 0.4, 0.2, 0)
+    
+    'trying to obtain the id of the
+    Dim arrrect As Variant
+    Dim i As Integer
+    For i = LBound(rectlines) To UBound(rectlines)
+        arrrect = rectlines(i).GetID()
+        Debug.Print arrrect(0)
+        Debug.Print arrrect(1)
+    Next i
+    
+    ' Disable AddToDB after creating sketch entities Don't know why shaded contours are removed after adding to database
+    swSktchMger.AddToDB = False
+    
+    ' Deselect all entities after creating the sketch
+    swModel.ClearSelection2 True
+
+    ' Show top view after creating the sketch
+    swModel.ShowNamedView2 "", swStandardViews_e.swFrontView
+    
+    ' Zoom to fit the screen in the SolidWorks window
+    swModel.ViewZoomtofit2
+       
+End Sub
+
+

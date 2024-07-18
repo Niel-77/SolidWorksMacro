@@ -1,0 +1,47 @@
+' Declare variables to hold references to SolidWorks application, model document, document specification, and part document
+Dim swApp As SldWorks.SldWorks
+Dim swModel As ModelDoc2
+Dim swDocspec As DocumentSpecification
+Dim swPart As PartDoc
+
+' Define a constant for the file path of the SolidWorks part document
+Const swFilepath = "D:\ANK\My macros\Start Practicing\metal plate for fork welding.SLDPRT"
+
+Sub main()
+
+    ' Initialize the SolidWorks application
+    Set swApp = Application.SldWorks
+
+    ' Create a document specification for the specified file path
+    Set swDocspec = swApp.GetOpenDocSpec(swFilepath)
+    
+    ' Declare a variable to hold the file name
+    Dim sName As String
+    
+    ' Get the file name from the document specification
+    sName = swDocspec.FileName
+    
+    ' Print the file name and configuration name to the debug output
+    Debug.Print sName
+    Debug.Print swDocspec.ConfigurationName
+    
+    ' Open the document using the document specification
+    Set swModel = swApp.OpenDoc7(swDocspec)
+    
+    ' Open the document using the OpenDoc6 method with silent options
+    Set swModel = swApp.OpenDoc6(swFilepath, swDocumentTypes_e.swDocPART, swOpenDocOptions_e.swOpenDocOptions_Silent, "", 0, 0)
+    
+    ' Set the model document as a part document
+    Set swPart = swModel
+    
+    ' Declare a variable to hold the title of the model document
+    Dim title As String
+    
+    ' Get the title of the model document
+    title = swModel.GetTitle
+    
+    ' Optionally close the document using its title need this to close the document
+    ' swApp.CloseDoc title
+
+End Sub
+

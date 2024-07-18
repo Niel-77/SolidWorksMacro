@@ -1,0 +1,186 @@
+Dim swApp As SldWorks.SldWorks
+
+Sub main()
+    Set swApp = Application.SldWorks
+    ' Changing the input dimension tick box unchecked
+    swApp.SetUserPreferenceToggle swUserPreferenceToggle_e.swInputDimValOnCreate, False
+End Sub
+
+
+
+'Changing the value no matter what 
+Sub main()
+    Set swApp = Application.SldWorks
+    If swApp.GetUserPreferenceToggle(swUserPreferenceToggle_e.swInputDimValOnCreate) = 1 Then
+        swApp.SetUserPreferenceToggle swUserPreferenceToggle_e.swInputDimValOnCreate, False
+    Else
+        swApp.SetUserPreferenceToggle swUserPreferenceToggle_e.swInputDimValOnCreate, True
+    End If
+    Debug.Print swApp.GetUserPreferenceToggle(swUserPreferenceToggle_e.swInputDimValOnCreate)
+End Sub
+
+
+
+'setting the precision values
+Dim swApp As SldWorks.SldWorks
+Dim swModel As SldWorks.ModelDoc2
+
+Sub main()
+    Set swApp = Application.SldWorks
+    Set swModel = swApp.ActiveDoc
+    swModel.Extension.SetUserPreferenceInteger swUserPreferenceIntegerValue_e.swDetailingLinearDimPrecision, swUserPreferenceOption_e.swDetailingDimension, 3
+End Sub
+
+
+
+' Printing the path of solidworks
+Dim swApp As SldWorks.SldWorks
+
+Sub main()
+    Set swApp = Application.SldWorks
+    Debug.Print swApp.GetExecutablePath
+End Sub
+
+
+
+'Closing all the documents
+Dim swApp As SldWorks.SldWorks
+
+Sub main()
+    Set swApp = Application.SldWorks
+    Debug.Print "All documents were closed successfully: " & swApp.CloseAllDocuments(True)
+End Sub
+
+
+
+'Playing with parts, assembly and documents
+Dim swApp As SldWorks.SldWorks
+Dim swModel As SldWorks.ModelDoc2
+Dim swPart As SldWorks.PartDoc
+Dim swAssy As SldWorks.AssemblyDoc
+Dim swDraw As SldWorks.DrawingDoc
+Dim strMatDB As String
+
+Sub main()
+    Set swApp = Application.SldWorks
+    Set swModel = swApp.ActiveDoc
+    
+    If Not swModel Is Nothing Then
+        If swModel.GetType = SwConst.swDocumentTypes_e.swDocPART Then
+            Set swPart = swModel
+            Debug.Print swPart.GetMaterialPropertyName2("", strMatDB)
+            Debug.Print swPart.GetPathName
+            Debug.Print swModel.Extension.NeedsRebuild
+        ElseIf swModel.GetType = SwConst.swDocumentTypes_e.swDocASSEMBLY Then
+            Set swAssy = swModel
+            Debug.Print swAssy.GetComponentCount(False)
+        ElseIf swModel.GetType = SwConst.swDocumentTypes_e.swDocDRAWING Then
+            Set swDraw = swModel
+            Debug.Print swDraw.GetSheetCount
+        Else
+            MsgBox "Invalid document type."
+            End
+        End If
+    End If
+End Sub
+
+
+
+
+'Printing out the license type
+Dim swApp As SldWorks.SldWorks
+Dim swModel As SldWorks.ModelDoc2
+
+Sub main()
+    Set swApp = Application.SldWorks
+    Set swModel = swApp.ActiveDoc
+    If Not swModel Is Nothing Then
+        Debug.Print swModel.Extension.GetLicenseType
+        Select Case swModel.Extension.GetLicenseType
+            Case 0
+                swApp.SendMsgToUser2 "License type: Full", swMbWarning, swMbOk
+            Case 1
+                swApp.SendMsgToUser2 "License type: Educational", swMbWarning, swMbOk
+            Case 2
+                swApp.SendMsgToUser2 "License type: Student", swMbWarning, swMbOk
+            Case 3
+                swApp.SendMsgToUser2 "License type: Student Design Kit", swMbWarning, swMbOk
+            Case 4
+                swApp.SendMsgToUser2 "License type: Personal", swMbWarning, swMbOk
+        End Select
+    Else
+        swApp.SendMsgToUser2 "Please open a document.", swMbWarning, swMbOk
+    End If
+End Sub
+
+
+
+'Print the number of views
+Dim swApp As SldWorks.SldWorks
+Dim swModel As SldWorks.ModelDoc2
+Dim swDraw As SldWorks.DrawingDoc
+
+Sub main()
+    Set swApp = Application.SldWorks
+    Set swModel = swApp.ActiveDoc
+    If Not swModel Is Nothing Then
+        If swModel.GetType = swDocDRAWING Then
+            Set swDraw = swModel
+            Debug.Print "Number of views: " & swDraw.GetViewCount - swDraw.GetSheetCount
+            Debug.Print "Dirty: " & swDraw.GetSaveFlag
+        Else
+            MsgBox "Please open a drawing."
+        End If
+    Else
+        MsgBox "Please open a drawing."
+    End If
+End Sub
+
+
+'Opening, and exporting a model to different format
+Dim swApp As SldWorks.SldWorks
+Dim swModel As SldWorks.ModelDoc2
+Dim swDocSpec As SldWorks.DocumentSpecification
+
+Dim lngErrors As Long
+Dim lngWarnings As Long
+
+Const strFullPath As String = "C:\Users\DELL\OneDrive - Tribhuvan University\Documents\Pulchowk Campus Bachelor\Final year project\Designs\hub-motor.sldprt"
+
+Sub main()
+    Set swApp = Application.SldWorks
+    Set swDocSpec = swApp.GetOpenDocSpec(strFullPath)
+    Set swModel = swApp.OpenDoc7(swDocSpec)
+    
+    swModel.ShowNamedView2 "", 7
+    swModel.ViewZoomtofit2
+    
+    Dim strNewPath As String
+    strNewPath = Replace(swModel.GetPathName, ".SLDPRT", ".STL")
+    Debug.Print strNewPath
+    swModel.Extension.SaveAs strNewPath, 0, 1 + 2, Nothing, lngErrors, lngWarnings
+    Debug.Print lngErrors
+    Debug.Print lngWarnings
+    swApp.CloseDoc swModel.GetTitle
+End Sub
+
+
+
+'Go through the configurations and print the configurations name and their Mass
+Dim swApp As SldWorks.SldWorks
+Dim swModel As SldWorks.ModelDoc2
+Dim swMassProp As SldWorks.MassProperty
+Dim vConfigNames As Variant
+Dim i As Integer
+
+Sub main()
+    Set swApp = Application.SldWorks
+    Set swModel = swApp.ActiveDoc
+    
+    vConfigNames = swModel.GetConfigurationNames
+    For i = 0 To UBound(vConfigNames)
+        Set swMassProp = swModel.Extension.CreateMassProperty
+        swModel.ShowConfiguration2 vConfigNames(i)
+        Debug.Print vConfigNames(i) & ": " & swMassProp.Mass
+    Next i
+End Sub

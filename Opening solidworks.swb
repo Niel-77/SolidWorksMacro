@@ -1,0 +1,37 @@
+' forces us to define every variable we are going to use
+Option Explicit
+
+' Creating variable for Solidworks application
+Dim swApp As SldWorks.SldWorks
+' Creating variable for Solidworks document
+Dim swModel As SldWorks.ModelDoc2
+
+' Main function of our VBA program
+Sub main()
+    ' Setting Solidworks variable to Solidworks application
+    Set swApp = Application.SldWorks
+    
+    ' Creating string type variable for storing default part location
+    Dim defaultTemplate As String
+    
+    ' Setting value of this string type variable to "Default part template"
+    'defaultTemplate = swApp.GetUserPreferenceStringValue(swUserPreferenceStringValue_e.swDefaultTemplatePart)
+    
+    ' Setting value of this string type variable to "Default assembly template"
+    'defaultTemplate = swApp.GetUserPreferenceStringValue(swUserPreferenceStringValue_e.swDefaultTemplateAssembly)
+    
+    ' Setting value of this string type variable to "Default drawing template"
+    defaultTemplate = swApp.GetUserPreferenceStringValue(swUserPreferenceStringValue_e.swDefaultTemplateDrawing)
+    
+    'for assembly and part we open as
+    'Set swModel = swApp.NewDocument(defaultTemplate, 0, 0, 0)
+
+    ' Setting Solidworks document to new drawing document. Here the second parameter can be used to define default paper sizes or also _
+        custom papers
+        
+    Set swModel = swApp.NewDocument(defaultTemplate, swDwgPaperSizes_e.swDwgPaperA4sizeVertical, 0, 0)
+    
+    
+    
+
+End Sub
