@@ -1,0 +1,72 @@
+Option Explicit
+
+Dim swApp As SldWorks.SldWorks
+Dim swModel As SldWorks.ModelDoc2
+Dim swModeldocext As SldWorks.ModelDocExtension
+Dim swSketchMgr As SldWorks.SketchManager
+Dim swSelMgr As SldWorks.SelectionMgr
+Dim swSketch As SldWorks.Sketch
+Dim swVklines As Variant
+Dim swFeat As SldWorks.Feature
+Dim swSketchPoint As SldWorks.SketchPoint
+Dim sketchPointArray As Variant
+Dim i As Long
+Dim xValue As Double
+Dim yValue As Double
+    
+Sub main()
+    
+    
+    Set swApp = CreateObject("SldWorks.Application")
+    
+    ' Create a string type variable for storing default part location
+    Dim defaultTemplate As String
+
+    ' Set the value of this string type variable to "Default part template"
+    defaultTemplate = swApp.GetUserPreferenceStringValue(swUserPreferenceStringValue_e.swDefaultTemplatePart)
+    
+    ' Create a new part document using the default template
+    Set swModel = swApp.NewDocument(defaultTemplate, 0, 0, 0)
+    
+    ' Get the model document extension object
+    Set swModeldocext = swModel.Extension
+    
+    ' Select the top plane using model document extension
+    swModeldocext.SelectByID2 "Front Plane", "PLANE", 0, 0, 0, False, 0, Nothing, swSelectOption_e.swSelectOptionDefault
+    
+    ' Get the sketch manager to create sketch routines
+    Set swSketchMgr = swModel.SketchManager
+    
+    ' Start a new sketch
+    swSketchMgr.InsertSketch True
+    
+    swVklines = swSketchMgr.CreateCornerRectangle(0, 0, 0, 0.2, 0.4, 0)
+    
+    'Select the active sketch
+    Set swSketch = swSketchMgr.ActiveSketch
+    
+    'Create the fillet of 0.01 m radius
+    'Not sure how this is working as we need to select corners first in solidworks to create fillet at that point
+    swSketchMgr.CreateFillet 0.01, swConstrainedCornerAction_e.swConstrainedCornerDeleteGeometry
+    
+    'sketchPointArray = swSketch.GetSketchPoints2
+    'Obtain corners to fillet
+    ' For i = 0 To UBound(sketchPointArray)
+    '     ' Get value returned by ISketchPoint::GetCoords
+    '     Set swSketchPoint = sketchPointArray(i)
+    '     Debug.Print "Value returned by ISketchPoint::GetCoords: " & swSketchPoint.GetCoords
+    '     ' Get the x & y coordinates
+    '     xValue = sketchPointArray(i).X
+    '     yValue = sketchPointArray(i).Y
+        
+    '     swSketchMgr.CreateFillet 0.01, swConstrainedCornerAction_e.swConstrainedCornerDeleteGeometry
+    '     Debug.Print "Sketch point coordinates: "
+    '     Debug.Print "  x: " & xValue
+    '     Debug.Print "  y: " & yValue
+    '     Debug.Print " "
+    '     ' Do something useful with the data
+    ' Next i
+
+End Sub
+
+
