@@ -12,6 +12,7 @@ Dim swVklines As Variant
 Dim swSketchPoint As SldWorks.SketchPoint
 Dim sketchPointArray As Variant
 Dim i As Long
+Dim swEnt As Entity
 Dim xValue As Double
 Dim yValue As Double
     
@@ -85,19 +86,32 @@ Sub main()
     swFaces = swFeature1.GetFaces()
     
     Dim swFace As SldWorks.Face2
+    Dim swFinalFace As Face2
+    
     Dim i As Integer
 
     ' Loop through each face
+    Dim dblArea As Double
+    dblArea = 1
+    
     For i = 0 To UBound(swFaces)
         Set swFace = swFaces(i)
         ' Process each face as needed
         ' For example, you can get properties of each face like its area, normal vector, etc.
+        If swFace.GetArea < dblArea Then
+            dblArea = swFace.GetArea
+            Set swFinalFace = swFace
+        End If
         Debug.Print "Face Area: " & swFace.GetArea
         Debug.Print "Face Id: " & swFace.GetFaceId
     Next i
+    Set swEnt = swFinalFace
+    swEnt.Select4 False, Nothing
     
     ' Rebuild the model to update changes
-    swModel.EditRebuild3
+    'swModel.EditRebuild3
+    
+    swApp.CloseDoc swModel.GetTitle
     
 End Sub
     
