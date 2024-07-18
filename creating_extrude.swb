@@ -1,0 +1,104 @@
+Option Explicit
+
+Dim swApp As SldWorks.SldWorks
+Dim swModel As SldWorks.ModelDoc2
+Dim swModeldocext As SldWorks.ModelDocExtension
+Dim swSketchMgr As SldWorks.SketchManager
+Dim swFeatureManager As FeatureManager
+Dim swFeature1 As Feature
+Dim swFeature2 As Feature
+Dim swSketch As SldWorks.Sketch
+Dim swVklines As Variant
+Dim swSketchPoint As SldWorks.SketchPoint
+Dim sketchPointArray As Variant
+Dim i As Long
+Dim xValue As Double
+Dim yValue As Double
+    
+Sub main()
+    
+    
+    Set swApp = CreateObject("SldWorks.Application")
+    
+    ' Create a string type variable for storing default part location
+    Dim defaultTemplate As String
+
+    ' Set the value of this string type variable to "Default part template"
+    defaultTemplate = swApp.GetUserPreferenceStringValue(swUserPreferenceStringValue_e.swDefaultTemplatePart)
+    
+    ' Create a new part document using the default template
+    Set swModel = swApp.NewDocument(defaultTemplate, 0, 0, 0)
+    
+    ' Get the model document extension object
+    Set swModeldocext = swModel.Extension
+    
+    'Get the model feature objects
+     Set swFeatureManager = swModel.FeatureManager
+    
+    ' Select the top plane using model document extension
+    swModeldocext.SelectByID2 "Front Plane", "PLANE", 0, 0, 0, False, 0, Nothing, swSelectOption_e.swSelectOptionDefault
+    
+    ' Get the sketch manager to create sketch routines
+    Set swSketchMgr = swModel.SketchManager
+    
+    ' Start a new sketch
+    swSketchMgr.InsertSketch True
+    
+    swVklines = swSketchMgr.CreateCenterRectangle(0, 0, 0, 0.1, 0.2, 0)
+    
+    'Select the active sketch
+    Set swSketch = swSketchMgr.ActiveSketch
+    
+    Dim depth As Double
+    depth = 0.01
+    
+    Set swFeature1 = swFeatureManager.FeatureExtrusion3(True, False, False, swEndConditions_e.swEndCondBlind, swEndConditions_e.swEndCondBlind, depth, 0, False, False, False, True, 0, 0, False, False, False, False, True, False, True, swEndConditions_e.swEndCondBlind, 0, False)
+    ' Exit the Sketch
+    swSketchMgr.InsertSketch True
+    swModel.ClearSelection2 True
+    
+    'select front plane again and create a sketch
+    ' Select the top plane using model document extension
+    swModeldocext.SelectByID2 "Front Plane", "PLANE", 0, 0, 0, False, 0, Nothing, swSelectOption_e.swSelectOptionDefault
+    
+    ' Get the sketch manager to create sketch routines
+    Set swSketchMgr = swModel.SketchManager
+    
+    ' Start a new sketch
+    swSketchMgr.InsertSketch True
+    
+    swVklines = swSketchMgr.CreateCenterRectangle(0, 0, 0, 0.02, 0.03, 0)
+    
+    'Select the active sketch
+    Set swSketch = swSketchMgr.ActiveSketch
+    
+    Dim depthcut As Double
+    depthcut = 0.01
+    
+    Set swFeature2 = swFeatureManager.FeatureCut4(False, False, False, 1, 0, depthcut, 0.01, False, False, False, False, 0, 1#, False, False, False, _
+        False, False, True, True, True, True, False, 0, 0, False, False)
+    swModel.ClearSelection2 True
+    
+    
+    ' Get all faces of the block
+    Dim swFaces As Variant
+    swFaces = swFeature1.GetFaces()
+    
+    Dim swFace As SldWorks.Face2
+    Dim i As Integer
+
+    ' Loop through each face
+    For i = 0 To UBound(swFaces)
+        Set swFace = swFaces(i)
+        ' Process each face as needed
+        ' For example, you can get properties of each face like its area, normal vector, etc.
+        Debug.Print "Face Area: " & swFace.GetArea
+        Debug.Print "Face Id: " & swFace.GetFaceId
+    Next i
+    
+    ' Rebuild the model to update changes
+    swModel.EditRebuild3
+    
+End Sub
+    
+    

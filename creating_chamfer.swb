@@ -1,0 +1,79 @@
+Option Explicit
+
+Dim swApp As SldWorks.SldWorks
+Dim swModel As SldWorks.ModelDoc2
+Dim swModeldocext As SldWorks.ModelDocExtension
+Dim swSketchMgr As SldWorks.SketchManager
+Dim swSketch As SldWorks.Sketch
+Dim swVklines As Variant
+Dim swSketchPoint As SldWorks.SketchPoint
+Dim sketchPointArray As Variant
+Dim i As Long
+Dim xValue As Double
+Dim yValue As Double
+    
+Sub main()
+    
+    
+    Set swApp = CreateObject("SldWorks.Application")
+    
+    ' Create a string type variable for storing default part location
+    Dim defaultTemplate As String
+
+    ' Set the value of this string type variable to "Default part template"
+    defaultTemplate = swApp.GetUserPreferenceStringValue(swUserPreferenceStringValue_e.swDefaultTemplatePart)
+    
+    ' Create a new part document using the default template
+    Set swModel = swApp.NewDocument(defaultTemplate, 0, 0, 0)
+    
+    ' Get the model document extension object
+    Set swModeldocext = swModel.Extension
+    
+    ' Select the top plane using model document extension
+    swModeldocext.SelectByID2 "Front Plane", "PLANE", 0, 0, 0, False, 0, Nothing, swSelectOption_e.swSelectOptionDefault
+    
+    ' Get the sketch manager to create sketch routines
+    Set swSketchMgr = swModel.SketchManager
+    
+    ' Start a new sketch
+    swSketchMgr.InsertSketch True
+    
+    swVklines = swSketchMgr.CreateCornerRectangle(0, 0, 0, 0.2, 0.4, 0)
+    
+    'Select the active sketch
+    Set swSketch = swSketchMgr.ActiveSketch
+    
+    'Create the chamfer of 0.01 m length on both sides
+    'using -1 to create distance distance chamfer
+    'using 0 to use distance angle chamfer
+    'using 2 to use equal distance chamfer
+    'Not sure how this is working as we need to select corners first in solidworks to create chamfer at that point
+    
+    
+    sketchPointArray = swSketch.GetSketchPoints2
+    'Obtain corners to fillet
+    For i = 0 To UBound(sketchPointArray)
+        ' Get value returned by ISketchPoint::GetCoords
+        Set swSketchPoint = sketchPointArray(i)
+        Debug.Print "Value returned by ISketchPoint::GetCoords: " & swSketchPoint.GetCoords
+        ' Get the x & y coordinates
+        xValue = sketchPointArray(i).X
+        yValue = sketchPointArray(i).Y
+
+        swModeldocext.SelectByID2 "Point1", "Sketchpoint", xValue, yValue, 0, False, i, Nothing, swSelectOption_e.swSelectOptionDefault
+        swSketchMgr.CreateChamfer -1, 0.01, 0.01
+        Debug.Print "Sketch point coordinates: "
+        Debug.Print "  x: " & xValue
+        Debug.Print "  y: " & yValue
+        Debug.Print " "
+        ' Do something useful with the data
+    Next i
+    
+    swModel.ClearSelection2 True
+    swModel.Rebuild (swRebuildOptions_e.swForceRebuildAll)
+
+End Sub
+
+
+
+
