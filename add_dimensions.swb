@@ -1,0 +1,71 @@
+' Declare SolidWorks application, model document, selection manager, sketch manager, and other necessary variables
+Dim swApp As SldWorks.SldWorks
+Dim swModel As SldWorks.ModelDoc2
+Dim swSelMgr As SldWorks.SelectionMgr
+Dim swSktchMger As SketchManager
+Dim swSketch As SldWorks.Sketch
+Dim vSkSegs As Variant
+Dim swSkSeg As SldWorks.SketchSegment
+Dim swDim As SldWorks.DisplayDimension
+Dim i As Integer
+
+Sub main()
+    ' Initialize the SolidWorks application
+    Set swApp = Application.SldWorks
+    
+    ' Declare a string variable to store the default part template location
+    Dim defaultTemplate As String
+    
+    ' Disable automatic dimension input on entity creation
+    swApp.SetUserPreferenceToggle swUserPreferenceToggle_e.swInputDimValOnCreate, False
+    
+    ' Get the default part template path
+    defaultTemplate = swApp.GetUserPreferenceStringValue(swUserPreferenceStringValue_e.swDefaultTemplatePart)
+    
+    ' Create a new part document using the default template
+    Set swModel = swApp.NewDocument(defaultTemplate, 0, 0, 0)
+    
+    ' Get the model document extension object
+    Set swModeldocext = swModel.Extension
+    
+    ' Select the "Front Plane" using the model document extension
+    swModeldocext.SelectByID2 "Front Plane", "PLANE", 0, 0, 0, False, 0, Nothing, swSelectOption_e.swSelectOptionDefault
+    
+    ' Get the sketch manager to create sketch routines
+    Set swSktchMger = swModel.SketchManager
+    
+    ' Start a new sketch
+    swSktchMger.InsertSketch True
+    
+    ' Enable AddToDB to add sketch entities directly to the SolidWorks database
+    swSktchMger.AddToDB = True
+    
+    ' Create a corner rectangle with the specified upper-left and lower-right coordinates
+    swSktchMger.CreateCornerRectangle 0, 0, 0, 0.4, 0.2, 0
+    
+    ' Get the selection manager
+    Set swSelMgr = swModel.SelectionManager
+    
+    ' Get the active sketch
+    Set swSketch = swModel.GetActiveSketch2
+    
+    ' Get all sketch segments in the active sketch
+    vSkSegs = swSketch.GetSketchSegments
+    
+    ' Loop through each sketch segment
+    For i = 0 To UBound(vSkSegs)
+        ' Select the current sketch segment
+        Set swSkSeg = vSkSegs(i)
+        swSkSeg.Select4 False, Nothing
+        
+        ' Add a dimension to the selected sketch segment at the given coordinates
+        swModel.AddDimension2 0.5, 0.01 * i, 0
+        
+        ' Get the added dimension
+        Set swDim = swSelMgr.GetSelectedObject6(1, -1)
+        ' Uncomment the next line to print the dimension type for debugging purposes
+        Debug.Print swDim.Type2
+    Next i
+    
+End Sub
+
